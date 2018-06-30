@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import json
 import logging
 
 from flask import Flask, request, make_response
@@ -35,17 +34,16 @@ def home():
         <h1>PDF Generator</h1>
         <p>The following endpoints are available:</p>
         <ul>
+            <li>POST to <code>/png?filename=myfile.png</code>. The body should
+                contain html</li>
             <li>POST to <code>/pdf?filename=myfile.pdf</code>. The body should
                 contain html</li>
-            <li>POST to <code>/multiple?filename=myfile.pdf</code>. The body
-                should contain a JSON list of html strings. They will each
-                be rendered and combined into a single pdf</li>
         </ul>
     '''
 
 
 @app.route('/pdf', methods=['POST'])
-def generate():
+def generate_pdf():
     name = request.args.get('filename', 'unnamed.pdf')
     app.logger.info('POST  /pdf?filename=%s' % name)
     html = HTML(string=request.data)
@@ -57,17 +55,16 @@ def generate():
     return response
 
 
-@app.route('/multiple', methods=['POST'])
-def multiple():
+@app.route('/png', methods=['POST'])
+def generate_png():
     name = request.args.get('filename', 'unnamed.pdf')
-    app.logger.info('POST  /multiple?filename=%s' % name)
-    htmls = json.loads(request.data.decode('utf-8'))
-    documents = [HTML(string=html).render() for html in htmls]
-    pdf = documents[0].copy([page for doc in documents for page in doc.pages]).write_pdf()
+    app.logger.info('POST  /png?filename=%s' % name)
+    html = HTML(string=request.data)
+    pdf = html.write_png()
     response = make_response(pdf)
-    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Type'] = 'image/png'
     response.headers['Content-Disposition'] = 'inline;filename=%s' % name
-    app.logger.info(' ==> POST  /multiple?filename=%s  ok' % name)
+    app.logger.info(' ==> POST  /pdf?filename=%s  ok' % name)
     return response
 
 

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3.5
 
-import json
 import re
 import subprocess
 import unittest
@@ -48,15 +47,10 @@ class TestPdf(unittest.TestCase):
         self.assertEqual(self.response.read()[:4], b'%PDF')
 
 
-class TestMultiple(unittest.TestCase):
+class TestPng(unittest.TestCase):
 
     def setUp(self):
-        url = 'http://127.0.0.1:5001/multiple?filename=sample.pdf'
-        headers = {
-            'Content-Type': 'application/json'
-        }
-        data = json.dumps([html_data, html_data]).encode('utf-8')
-        request = Request(url, data=data, headers=headers, method='POST')
+        request = request_factory('/png?filename=sample.png')
         self.response = urlopen(request)
 
     def tearDown(self):
@@ -67,13 +61,11 @@ class TestMultiple(unittest.TestCase):
 
     def test_headers(self):
         headers = dict(self.response.info())
-        self.assertEqual(headers['Content-Type'], 'application/pdf')
-        self.assertEqual(headers['Content-Disposition'], 'inline;filename=sample.pdf')
+        self.assertEqual(headers['Content-Type'], 'image/png')
+        self.assertEqual(headers['Content-Disposition'], 'inline;filename=sample.png')
 
     def test_body(self):
-        data = self.response.read()
-        pages = re.findall(rb'<<\s+/Type\s+/Page\b', data, re.MULTILINE|re.DOTALL)
-        self.assertEqual(len(pages), 2)
+        self.assertEqual(self.response.read()[:4], b'\x89PNG')
 
 
 if __name__ == '__main__':
