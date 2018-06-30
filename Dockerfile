@@ -1,6 +1,6 @@
 FROM containerstack/alpine
 
-ARG FLASK_VERSION=0.10
+ARG FLASK_VERSION=1.0.2
 ARG WEASY_VERSION=0.42.3
 
 RUN apk add --no-cache \
